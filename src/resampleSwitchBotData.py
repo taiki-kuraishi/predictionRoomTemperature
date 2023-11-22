@@ -4,7 +4,6 @@
 
 # %%
 # import packages
-import datetime
 import pandas as pd
 
 # %%
