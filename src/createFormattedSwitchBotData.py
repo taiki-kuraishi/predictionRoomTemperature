@@ -13,7 +13,7 @@ import pandas as pd
 
 # %%
 # read csv
-raw_switchBot_data = pd.read_csv('../data/swichBot_data.csv', encoding='utf-8')
+raw_switchBot_data = pd.read_csv('../data/switchBot_data.csv', encoding='utf-8')
 switchBot_data = raw_switchBot_data
 
 # %%
@@ -63,4 +63,4 @@ switchBot_data.describe()
 
 # %%
 # csvファイルとして出力
-switchBot_data.to_csv('../data/formattedSwitchBot_data.csv', index=False)
+switchBot_data.to_csv('../data/formatted_switchBot_data.csv', index=False)
