@@ -52,6 +52,10 @@ print(niigata_weather_data.dtypes)
 niigata_weather_data.head()
 
 # %%
+# 欠損値の確認
+niigata_weather_data.isnull().sum()
+
+# %%
 # describe niigata_weather_data
 niigata_weather_data.describe()
 
