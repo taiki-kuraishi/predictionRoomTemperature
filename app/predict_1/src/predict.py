@@ -125,10 +125,8 @@ x_test.dtypes
 
 # %%
 # import packages
-import seaborn as sns
 import sklearn
 # from sklearn.utils_testing import all_estimators
-from sklearn.datasets import load_diabetes
 from sklearn.metrics import mean_squared_error
 import numpy as np
 import warnings
@@ -149,8 +147,14 @@ for (name, algorithm) in allAlgorithms:
         clf = algorithm()
         clf.fit(x_train, y_train)
         y_pred = clf.predict(x_test)
+
         score = np.sqrt(mean_squared_error(y_test, y_pred))
         print(name, "の正解率＝", score)
+
+        # 正答率の計算　+=1度以上の誤差があれば不正解
+        diff = abs(y_test - y_pred)
+        correct = diff[diff < 1].count()
+        answer_rate = correct / len(y_test)
         print('正答率は', answer_rate, 'です。')
 
         # 横軸がdatetime、縦軸が気温のグラフを作成
@@ -163,11 +167,6 @@ for (name, algorithm) in allAlgorithms:
         plt.tight_layout()
         plt.show()
 
-        # 正答率の計算　+=1度以上の誤差があれば不正解
-        diff = abs(y_test - y_pred)
-        correct = diff[diff < 1].count()
-        answer_rate = correct / len(y_test)
-
         # 最も正解率の高いモデルを記憶
         if best_score == None:
             best_score = score
@@ -177,7 +176,6 @@ for (name, algorithm) in allAlgorithms:
             best_algorithm = name
         else:
             pass
-
     except:
         ignore_algorithms.append(name)
 print(ignore_algorithms)
