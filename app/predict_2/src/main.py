@@ -3,6 +3,7 @@
 import re
 import datetime
 import pandas as pd
+import seaborn as sns
 import matplotlib.pyplot as plt
 
 # %% [markdown]
@@ -155,10 +156,10 @@ niigata_data = niigata_data[
         "N_vpd",
         "N_ppt",
         "N_srad",
+        "N_sd",
         "N_wspd",
         "N_ca",
         "N_press",
-        "N_sd",
     ]
 ]
 
@@ -268,12 +269,34 @@ merged_data.head()
 
 # %%
 # 横軸がdatetime、縦軸が気温のグラフを作成
+plt.rcParams["font.size"] = 15
+
+
 plt.figure(figsize=(20, 10))
+
+
 plt.plot(merged_data["datetime"], merged_data["N_temp"], label="Niigata_temp")
+
+
 plt.plot(merged_data["datetime"], merged_data["S_temp"], label="SwitchBot_temp")
-plt.legend(loc="upper left", fontsize=20)
+
+
+plt.legend(loc="upper left")
+
+
 plt.ylabel("temp")
+plt.xlabel("datetime")
+
+
 plt.tight_layout()
+
+
+plt.show()
+
+# %%
+# 相関係数のヒートマップを作成
+plt.figure(figsize=(20, 10))
+sns.heatmap(merged_data.corr(), annot=True, cmap="summer")
 plt.show()
 
 # %%
@@ -334,16 +357,17 @@ test_data = test_data.reset_index(drop=True)
 # %%
 # 目的変数と説明変数の設定
 # drop_columns = ["N_press", "N_hum", "N_DPT", "S_temp", "S_hum", "S_press", "S_DPT"]
-drop_columns = [
-    "S_temp",
-    "S_hum",
-    "S_dpt",
-    "S_vpd",
-]
+drop_columns = ["S_temp", "S_hum", "S_dpt", "S_vpd", "N_dpt", "N_vpd", "N_ca", "N_sd"]
 y_train = train_data["S_temp"]
 x_train = train_data.drop(drop_columns, axis=1)
 y_test = test_data["S_temp"]
 x_test = test_data.drop(drop_columns, axis=1)
+
+# %%
+# trainデータのヒートマップを作成
+plt.figure(figsize=(20, 10))
+sns.heatmap(x_train.corr(), annot=True, cmap="summer")
+plt.show()
 
 # %%
 print(x_train.head())
@@ -358,7 +382,7 @@ import sklearn
 # from sklearn.utils_testing import all_estimators
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import mean_absolute_error
-import numpy as np
+from sklearn.metrics import r2_score
 import warnings
 
 warnings.filterwarnings("ignore")
@@ -386,6 +410,7 @@ ignore_algorithms = [
 result_dict = {}
 
 plt.figure(figsize=(10, 100))
+plt.rcParams["font.size"] = 9
 index = 1
 
 for name, algorithm in allAlgorithms:
@@ -400,12 +425,15 @@ for name, algorithm in allAlgorithms:
     y_pred = clf.predict(x_test)
 
     # 平均二乗誤差
-    mse = np.sqrt(mean_squared_error(y_test, y_pred))
+    mse = mean_squared_error(y_test, y_pred)
     print("\t平均二乗誤差 : ", mse)
 
     # 絶対値平均
     mae = mean_absolute_error(y_test, y_pred)
     print("\t絶対値平均 : ", mae)
+
+    # 決定係数
+    r2 = r2_score(y_test, y_pred)
 
     # 正答率の計算　+=1度以上の誤差があれば不正解
     diff = abs(y_test - y_pred)
@@ -438,6 +466,7 @@ for name, algorithm in allAlgorithms:
         "name": name,
         "mse": mse,
         "mae": mae,
+        "r2": r2,
         "answer_rate": answer_rate,
     }
     index += 1
@@ -456,3 +485,32 @@ result_df["answer_rate"] = result_df["answer_rate"].round(1)
 
 
 result_df
+
+# %%
+# mseが最小のmodelを表示
+result_df[result_df["mse"] == result_df["mse"].min()]
+
+# %%
+# maeが最小のmodelを表示
+result_df[result_df["mae"] == result_df["mae"].min()]
+
+# %%
+# r2の値が1に近いmodelを表示
+result_df[result_df["r2"] == result_df["r2"].max()]
+
+# %%
+# r2が0.6以上のmodelを表示
+result_df[result_df["r2"] >= 0.5]
+
+# %%
+# result_dfのmse,mae.r2,answer_rateカラムの平均値を計算
+print("mseの平均値 : ", result_df["mse"].mean())
+print("maeの平均値 : ", result_df["mae"].mean())
+print("r2の平均値 : ", result_df["r2"].mean())
+print("answer_rateの平均値 : ", result_df["answer_rate"].mean())
+"""
+mseの平均値 :  1.4269163272787504e+28
+maeの平均値 :  18427151831963.742
+r2の平均値 :  -2.0239250283600288e+27
+answer_rateの平均値 :  33.59285714285714
+"""
